@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Sorpresa!! 🎁</title>
+  <title>¡Feliz Cumpleaños! 🎁</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,7 +64,7 @@
       position: absolute;
       top: 0;
       bottom: 0;
-      width: 50%;
+      width: 51%;
       height: 100%;
       background: repeating-linear-gradient(
         90deg,
@@ -75,28 +75,28 @@
         #060509 100px
       );
       box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.96);
-      transition: transform 2.8s cubic-bezier(0.77, 0, 0.175, 1);
+      transition: transform 3.8s cubic-bezier(0.7, 0, 0.15, 1);
       pointer-events: auto;
+      border: none !important;
+      outline: none;
     }
 
     .curtain-left {
       left: 0;
       transform-origin: left center;
-      border-right: 1px solid rgba(243, 194, 87, 0.2);
     }
 
     .curtain-right {
       right: 0;
       transform-origin: right center;
-      border-left: 1px solid rgba(243, 194, 87, 0.2);
     }
 
     #curtain-wrapper.open .curtain-left {
-      transform: translateX(-100%);
+      transform: translateX(-102%);
     }
 
     #curtain-wrapper.open .curtain-right {
-      transform: translateX(100%);
+      transform: translateX(102%);
     }
 
     .stage-light-beam {
@@ -104,14 +104,14 @@
       inset: 0;
       background: radial-gradient(circle at center, rgba(217, 4, 41, 0.45) 0%, rgba(243, 194, 87, 0.28) 35%, transparent 70%);
       opacity: 0;
-      transition: opacity 1.5s ease-in-out;
+      transition: opacity 2s ease-in-out;
       pointer-events: none;
       z-index: 99998;
     }
 
     #curtain-wrapper.open .stage-light-beam {
       opacity: 1;
-      animation: flash-beam 2.8s forwards;
+      animation: flash-beam 3.8s forwards;
     }
 
     @keyframes flash-beam {
@@ -130,7 +130,7 @@
       justify-content: center;
       text-align: center;
       padding: 24px;
-      transition: opacity 0.5s ease;
+      transition: opacity 0.6s ease;
       pointer-events: auto;
     }
 
@@ -206,7 +206,7 @@
       margin-bottom: 40px;
       opacity: 0;
       transform: translateY(20px);
-      transition: opacity 1s ease 1.5s, transform 1s ease 1.5s;
+      transition: opacity 1.2s ease 1.2s, transform 1.2s ease 1.2s;
     }
 
     .container.visible {
@@ -252,7 +252,7 @@
       font-style: italic;
     }
 
-    /* Barra de audio elegante y compacta */
+    /* Barra de audio */
     .music-bar {
       width: 100%;
       background: rgba(217, 4, 41, 0.12);
@@ -580,7 +580,7 @@
       margin-bottom: 0;
     }
 
-    /* Botón Compartir */
+    /* Botón Compartir (oculto) */
     .share-btn {
       font-family: var(--font-body);
       width: 100%;
@@ -608,7 +608,7 @@
 </head>
 <body>
 
-  <!-- SISTEMA DEL TELÓN CON ANIMACIÓN DE APERTURA -->
+  <!-- SISTEMA DEL TELÓN -->
   <div id="curtain-wrapper">
     <div class="stage-light-beam"></div>
     <div class="curtain-panel curtain-left"></div>
@@ -635,11 +635,11 @@
     <!-- Encabezado con Fecha Unificada -->
     <div class="header-box">
       <div class="elegant-date">15 · 09 · 2026</div>
-      <h1>¡Feliz Cumple Ma!</h1>
+      <h1>¡Feliz Cumple, Ma!</h1>
       <p>"Para que disfrutes una noche de baladas retro... (con invitado sorpresa)"</p>
     </div>
 
-    <!-- Barra de audio nativa y compacta -->
+    <!-- Barra de audio nativa -->
     <div class="music-bar" id="music-indicator">
       <div class="music-info">
         <div class="sound-waves" id="waves">
@@ -696,7 +696,7 @@
 
       <div class="ticket-footer">
         <div class="sign-box">
-          De: <strong>Agus</strong> &nbsp;|&nbsp; Para: <strong>Paula</strong> ✨
+          ✨ De: <strong>Agus</strong> &nbsp;|&nbsp; Para: <strong>Paula</strong> ✨
         </div>
         <span class="status-badge">ENTRADAS COMPRADAS</span>
       </div>
@@ -728,6 +728,7 @@
     <!-- Playlist Oficial de Camila -->
     <div class="spotify-box">
       <iframe 
+        id="spotify-frame"
         style="border-radius:12px" 
         src="https://open.spotify.com/embed/playlist/37i9dQZF1DZ06evO1ihM3e?utm_source=generator&theme=0" 
         width="100%" 
@@ -758,14 +759,14 @@
       </div>
     </div>
 
-    <!-- Botón Compartir al final -->
-    <button class="share-btn" onclick="saveOrShare()">
+    <!-- Botón Compartir (oculto con display:none para conservarlo en el código) -->
+    <button class="share-btn" onclick="saveOrShare()" style="display: none;">
       <span>📲</span> Guardar / Compartir Recuerdo
     </button>
 
   </div>
 
-  <!-- Audio nativo con enlace al archivo de tu carpeta -->
+  <!-- Audio nativo -->
   <audio id="audioTrack" preload="auto" playsinline>
     <source src="Camila - Decidiste Dejarme (Videoclip Oficial).mp3" type="audio/mpeg">
     <source src="cancion.mp3" type="audio/mpeg">
@@ -800,39 +801,54 @@
     setInterval(refreshTimer, 1000);
     refreshTimer();
 
-    // Manejo de Audio Nativo en segundo 49
+    // Manejo de Audio Nativo
     const audio = document.getElementById('audioTrack');
     let isPlaying = false;
+    let fadeInterval = null;
 
-    function startMusic() {
-      const seekAndPlay = () => {
+    function fadeInAudio() {
+      audio.volume = 0.05;
+      clearInterval(fadeInterval);
+      fadeInterval = setInterval(() => {
+        if (audio.volume < 0.95) {
+          audio.volume = Math.min(1, audio.volume + 0.03);
+        } else {
+          audio.volume = 1;
+          clearInterval(fadeInterval);
+        }
+      }, 100);
+    }
+
+    // Prepara el audio en el gesto del usuario y lo arranca al mismo tiempo que el confeti
+    function armAndPlayMusic(delayMs) {
+      audio.load();
+      try {
+        audio.currentTime = 49;
+      } catch (e) {}
+
+      setTimeout(() => {
         try {
           audio.currentTime = 49;
-        } catch (e) {
-          console.log("No se pudo saltar al seg 49 inmediatamente, reproduciendo:", e);
-        }
+        } catch (e) {}
+        audio.volume = 0.05;
         audio.play().then(() => {
           isPlaying = true;
+          fadeInAudio();
           setUIState(true);
         }).catch(err => {
           console.log("Error al reproducir audio:", err);
         });
-      };
-
-      if (audio.readyState >= 1) {
-        seekAndPlay();
-      } else {
-        audio.addEventListener('loadedmetadata', seekAndPlay, { once: true });
-        audio.load();
-      }
+      }, delayMs);
     }
 
     function toggleAudio() {
       if (isPlaying) {
+        clearInterval(fadeInterval);
         audio.pause();
         isPlaying = false;
         setUIState(false);
       } else {
+        audio.volume = 1;
         audio.play().then(() => {
           isPlaying = true;
           setUIState(true);
@@ -855,47 +871,72 @@
       }
     }
 
+    // Detector de pausa al interactuar con Spotify
+    window.addEventListener('blur', () => {
+      setTimeout(() => {
+        if (document.activeElement && document.activeElement.id === 'spotify-frame') {
+          if (isPlaying) {
+            audio.pause();
+            isPlaying = false;
+            setUIState(false);
+          }
+        }
+      }, 100);
+    });
+
+    // Disparo de Confeti
+    function launchConfetti(durationMs) {
+      const end = Date.now() + durationMs;
+      (function frame() {
+        confetti({
+          particleCount: 6,
+          angle: 60,
+          spread: 65,
+          origin: { x: 0 },
+          colors: ['#d90429', '#f3c257', '#ffffff']
+        });
+        confetti({
+          particleCount: 6,
+          angle: 120,
+          spread: 65,
+          origin: { x: 1 },
+          colors: ['#d90429', '#f3c257', '#ffffff']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
+    }
+
+    // Apertura del telón sincronizada
     function openCurtain() {
       const curtainWrapper = document.getElementById('curtain-wrapper');
       const curtainContent = document.getElementById('curtain-content');
       const mainContainer = document.getElementById('main-container');
 
-      // Se ejecuta de inmediato con el tap del usuario
-      startMusic();
-
       curtainContent.classList.add('fade-out');
       curtainWrapper.classList.add('open');
       mainContainer.classList.add('visible');
 
+      // Momento sincronizado: 1.2 segundos tras iniciar la apertura
+      const SYNC_TIME = 1200;
+
+      // 1. La música arranca a la par del confeti
+      armAndPlayMusic(SYNC_TIME);
+
+      // 2. El confeti explota en ese instante exacto
+      setTimeout(() => {
+        launchConfetti(4000);
+      }, SYNC_TIME);
+
+      // Cierre del wrapper una vez que el telón salió completamente de pantalla
       setTimeout(() => {
         curtainWrapper.style.display = 'none';
-
-        const duration = 3.5 * 1000;
-        const end = Date.now() + duration;
-
-        (function frame() {
-          confetti({
-            particleCount: 5,
-            angle: 60,
-            spread: 60,
-            origin: { x: 0 },
-            colors: ['#d90429', '#f3c257', '#ffffff']
-          });
-          confetti({
-            particleCount: 5,
-            angle: 120,
-            spread: 60,
-            origin: { x: 1 },
-            colors: ['#d90429', '#f3c257', '#ffffff']
-          });
-
-          if (Date.now() < end) {
-            requestAnimationFrame(frame);
-          }
-        }());
-      }, 2800);
+      }, 3800);
     }
 
+    // Guardar / Compartir (listo para reactivar cuando quieras)
     async function saveOrShare() {
       const shareData = {
         title: '¡Feliz Cumple Ma! - Camila en Movistar Arena',

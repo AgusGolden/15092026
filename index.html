@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sorpresa!! 🎁</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --stage-red: #d90429;
+      --stage-red-dark: #7a0014;
+      --gold: #f3c257;
+      --gold-dim: rgba(243, 194, 87, 0.35);
+      --bg: #07080c;
+      --card-bg: #111219;
+      --card-inner: #181924;
+      --text: #f0f1f7;
+      --text-muted: #9fa3b5;
+      --border: rgba(243, 194, 87, 0.22);
+      --font-body: 'Montserrat', sans-serif;
+      --font-display: 'Playfair Display', serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(217, 4, 41, 0.26), transparent 70%),
+        radial-gradient(circle at 85% 85%, rgba(243, 194, 87, 0.14), transparent 60%);
+    }
+
+    /* SISTEMA DE TELÓN */
+    #curtain-wrapper {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      pointer-events: none;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .curtain-panel {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        90deg,
+        #050508 0px,
+        #17070b 25px,
+        #080406 50px,
+        #240d13 75px,
+        #060509 100px
+      );
+      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.96);
+      transition: transform 2.8s cubic-bezier(0.77, 0, 0.175, 1);
+      pointer-events: auto;
+    }
+
+    .curtain-left {
+      left: 0;
+      transform-origin: left center;
+      border-right: 1px solid rgba(243, 194, 87, 0.2);
+    }
+
+    .curtain-right {
+      right: 0;
+      transform-origin: right center;
+      border-left: 1px solid rgba(243, 194, 87, 0.2);
+    }
+
+    #curtain-wrapper.open .curtain-left {
+      transform: translateX(-100%);
+    }
+
+    #curtain-wrapper.open .curtain-right {
+      transform: translateX(100%);
+    }
+
+    .stage-light-beam {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(217, 4, 41, 0.45) 0%, rgba(243, 194, 87, 0.28) 35%, transparent 70%);
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+      pointer-events: none;
+      z-index: 99998;
+    }
+
+    #curtain-wrapper.open .stage-light-beam {
+      opacity: 1;
+      animation: flash-beam 2.8s forwards;
+    }
+
+    @keyframes flash-beam {
+      0% { opacity: 0; }
+      50% { opacity: 0.85; }
+      100% { opacity: 0; }
+    }
+
+    .curtain-content {
+      position: absolute;
+      inset: 0;
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      transition: opacity 0.5s ease;
+      pointer-events: auto;
+    }
+
+    .curtain-content.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 8vw, 3.8rem);
+      color: #fff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    }
+
+    .modal-subtitle {
+      color: var(--text-muted);
+      max-width: 420px;
+      font-size: clamp(1.05rem, 4vw, 1.2rem);
+      line-height: 1.6;
+      margin-bottom: 34px;
+    }
+
+    .gift-btn {
+      font-family: var(--font-body);
+      background: linear-gradient(135deg, var(--stage-red), var(--stage-red-dark));
+      border: 1px solid var(--gold);
+      color: #fff;
+      padding: 18px 46px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 0 35px rgba(217, 4, 41, 0.55), inset 0 0 15px rgba(243, 194, 87, 0.25);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      animation: float-btn 2.6s ease-in-out infinite;
+    }
+
+    @keyframes float-btn {
+      0%, 100% {
+        transform: translateY(0);
+        box-shadow: 0 0 30px rgba(217, 4, 41, 0.5), inset 0 0 15px rgba(243, 194, 87, 0.2);
+      }
+      50% {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 40px rgba(217, 4, 41, 0.75), inset 0 0 20px rgba(243, 194, 87, 0.35);
+      }
+    }
+
+    .gift-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Contenedor principal */
+    .container {
+      max-width: 650px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-top: 10px;
+      margin-bottom: 40px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1s ease 1.5s, transform 1s ease 1.5s;
+    }
+
+    .container.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Encabezado */
+    .header-box {
+      width: 100%;
+      position: relative;
+      text-align: center;
+      padding: 0 10px;
+    }
+
+    .elegant-date {
+      position: absolute;
+      top: -8px;
+      right: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--gold);
+      border-bottom: 1px solid var(--gold-dim);
+      padding-bottom: 2px;
+    }
+
+    .header-box h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.3rem, 7vw, 3.4rem);
+      font-weight: 700;
+      background: linear-gradient(90deg, #ffffff, var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+      margin-top: 18px;
+    }
+
+    .header-box p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    /* Barra de audio elegante y compacta */
+    .music-bar {
+      width: 100%;
+      background: rgba(217, 4, 41, 0.12);
+      border: 1px solid rgba(217, 4, 41, 0.38);
+      padding: 14px 20px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    }
+
+    .music-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.88rem;
+    }
+
+    .sound-waves {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 18px;
+    }
+
+    .sound-waves span {
+      width: 3px;
+      background: var(--stage-red);
+      border-radius: 2px;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .sound-waves.paused span {
+      animation: none;
+      height: 4px;
+    }
+
+    .sound-waves span:nth-child(2) { animation-delay: 0.2s; height: 14px; }
+    .sound-waves span:nth-child(3) { animation-delay: 0.4s; height: 18px; }
+    .sound-waves span:nth-child(1) { height: 10px; }
+
+    @keyframes bounce {
+      0%, 100% { height: 4px; }
+      50% { height: 18px; }
+    }
+
+    .music-toggle-btn {
+      font-family: var(--font-body);
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .music-toggle-btn:hover {
+      background: rgba(243, 194, 87, 0.15);
+    }
+
+    /* Tarjeta Ticket */
+    .ticket {
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ticket-banner {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      background-image: url('http://movistararena.com.ar/static/artistas/9F7DA_Camila_FileFotoFichaDesktop');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding: 18px;
+    }
+
+    .ticket-banner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, var(--card-bg) 0%, rgba(17, 18, 25, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%);
+    }
+
+    .badge-venue {
+      position: relative;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--gold);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Cuerpo del ticket */
+    .ticket-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+    }
+
+    .notch {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      background: var(--bg);
+      border-radius: 50%;
+      top: 130px;
+    }
+    .notch-left { left: -14px; }
+    .notch-right { right: -14px; }
+
+    .grid-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .info-cell h5 {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--gold);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .info-cell p {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .seats-panel {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .seats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--gold);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    .seats-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .seats-detail {
+      font-size: 0.98rem;
+      font-weight: 600;
+    }
+
+    .seats-numbers {
+      background: rgba(217, 4, 41, 0.16);
+      border: 1px solid var(--stage-red);
+      padding: 6px 14px;
+      border-radius: 8px;
+      color: #ff4d6d;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .ticket-footer {
+      border-top: 1px dashed var(--gold-dim);
+      padding: 16px 24px;
+      background: rgba(0, 0, 0, 0.35);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .sign-box {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .sign-box strong {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      font-size: 0.72rem;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      background: rgba(243, 194, 87, 0.08);
+    }
+
+    /* Cuenta Regresiva */
+    .countdown-card {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .countdown-title {
+      font-size: 0.82rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
+    .countdown-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .time-unit {
+      background: var(--card-inner);
+      padding: 10px 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .time-num {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .time-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Playlist Spotify */
+    .spotify-box {
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    }
+
+    /* Acerca del evento */
+    .about-event-card {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .about-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--gold-dim);
+      padding-bottom: 8px;
+    }
+
+    .about-header h3 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+    }
+
+    .about-text {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: var(--text-muted);
+      text-align: left;
+      font-weight: 400;
+    }
+
+    .about-text p {
+      margin-bottom: 12px;
+    }
+
+    .about-text p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Botón Compartir */
+    .share-btn {
+      font-family: var(--font-body);
+      width: 100%;
+      background: linear-gradient(135deg, #181924, #0d0e14);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+      transition: transform 0.2s;
+    }
+
+    .share-btn:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SISTEMA DEL TELÓN CON ANIMACIÓN DE APERTURA -->
+  <div id="curtain-wrapper">
+    <div class="stage-light-beam"></div>
+    <div class="curtain-panel curtain-left"></div>
+    <div class="curtain-panel curtain-right"></div>
+    
+    <div class="curtain-content" id="curtain-content">
+      <h2 class="modal-title">
+        <span>✨</span>
+        <span>¡Feliz Cumpleaños!</span>
+        <span>✨</span>
+      </h2>
+      <p class="modal-subtitle">
+        Tenés tu regalo esperando... 🎁<br>Abrilo abajo para descubrirlo!
+      </p>
+      
+      <button class="gift-btn" id="open-btn" onclick="openCurtain()">
+        <span>Abrir Regalo</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="container" id="main-container">
+    
+    <!-- Encabezado con Fecha Unificada -->
+    <div class="header-box">
+      <div class="elegant-date">15 · 09 · 2026</div>
+      <h1>¡Feliz Cumple Ma!</h1>
+      <p>"Para que disfrutes una noche de baladas retro... (con invitado sorpresa)"</p>
+    </div>
+
+    <!-- Barra de audio nativa y compacta -->
+    <div class="music-bar" id="music-indicator">
+      <div class="music-info">
+        <div class="sound-waves" id="waves">
+          <span></span><span></span><span></span>
+        </div>
+        <div>
+          <strong style="color: #fff; font-weight: 600;">Camila - Decidiste Dejarme</strong>
+          <div style="font-size: 0.72rem; color: var(--gold);" id="track-status">Sonando en vivo 🎶</div>
+        </div>
+      </div>
+      <button class="music-toggle-btn" id="mute-btn" onclick="toggleAudio()">Pausar</button>
+    </div>
+
+    <!-- Ticket Digital -->
+    <div class="ticket">
+      <div class="ticket-banner">
+        <span class="badge-venue">Movistar Arena · Bs. As.</span>
+      </div>
+
+      <div class="notch notch-left"></div>
+      <div class="notch notch-right"></div>
+
+      <div class="ticket-body">
+        <div class="grid-info">
+          <div class="info-cell">
+            <h5>Fecha</h5>
+            <p>Jueves 15 de Octubre 2026</p>
+          </div>
+          <div class="info-cell">
+            <h5>Horario</h5>
+            <p>21:00 hs</p>
+          </div>
+          <div class="info-cell">
+            <h5>Lugar</h5>
+            <p>Humboldt 450, CABA</p>
+          </div>
+          <div class="info-cell">
+            <h5>Gira Oficial</h5>
+            <p>Adiós... World Tour</p>
+          </div>
+        </div>
+
+        <div class="seats-panel">
+          <div class="seats-header">
+            <span>Ubicación asignada (3 personas)</span>
+            <span>Acceso VIP</span>
+          </div>
+          <div class="seats-row">
+            <div class="seats-detail">Platea Alta - Sector 306 · Fila G</div>
+            <div class="seats-numbers">Asientos 8, 9 y 10</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ticket-footer">
+        <div class="sign-box">
+          De: <strong>Agus</strong> &nbsp;|&nbsp; Para: <strong>Paula</strong> ✨
+        </div>
+        <span class="status-badge">ENTRADAS COMPRADAS</span>
+      </div>
+    </div>
+
+    <!-- Cuenta regresiva -->
+    <div class="countdown-card">
+      <div class="countdown-title">Faltan...</div>
+      <div class="countdown-grid">
+        <div class="time-unit">
+          <div class="time-num" id="days">--</div>
+          <div class="time-label">Días</div>
+        </div>
+        <div class="time-unit">
+          <div class="time-num" id="hours">--</div>
+          <div class="time-label">Horas</div>
+        </div>
+        <div class="time-unit">
+          <div class="time-num" id="mins">--</div>
+          <div class="time-label">Min</div>
+        </div>
+        <div class="time-unit">
+          <div class="time-num" id="secs">--</div>
+          <div class="time-label">Seg</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Playlist Oficial de Camila -->
+    <div class="spotify-box">
+      <iframe 
+        style="border-radius:12px" 
+        src="https://open.spotify.com/embed/playlist/37i9dQZF1DZ06evO1ihM3e?utm_source=generator&theme=0" 
+        width="100%" 
+        height="152" 
+        frameBorder="0" 
+        allowfullscreen="" 
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+        loading="lazy">
+      </iframe>
+    </div>
+
+    <!-- Sección Acerca del Evento -->
+    <div class="about-event-card">
+      <div class="about-header">
+        <span style="color: var(--gold); font-size: 1.1rem;">🎤</span>
+        <h3>Acerca del evento</h3>
+      </div>
+      <div class="about-text">
+        <p>
+          CAMILA celebra 20 años de una trayectoria que marcó al pop en español con millones de discos vendidos, giras internacionales y canciones que acompañaron a generaciones. Con la formación original integrada por Mario Domm, Pablo Hurtado y Samo, la banda se despide de los escenarios con ADIÓS World Tour, luego del exitoso regreso que emocionó a fans de más de veinte países.
+        </p>
+        <p>
+          En este último encuentro, el público podrá revivir clásicos como “Todo cambió”, “Mientes”, “Bésame”, “Coleccionista de canciones” y “Aléjate de mí”, entre muchos otros.
+        </p>
+        <p>
+          CAMILA se presentará el 15 de octubre en el Movistar Arena de Buenos Aires y el 17 de octubre en el Quality Arena de Córdoba, en una despedida inolvidable para celebrar junto a sus fans una historia que dejó huella.
+        </p>
+      </div>
+    </div>
+
+    <!-- Botón Compartir al final -->
+    <button class="share-btn" onclick="saveOrShare()">
+      <span>📲</span> Guardar / Compartir Recuerdo
+    </button>
+
+  </div>
+
+  <!-- Audio nativo con enlace al archivo de tu carpeta -->
+  <audio id="audioTrack" preload="auto" playsinline>
+    <source src="Camila - Decidiste Dejarme (Videoclip Oficial).mp3" type="audio/mpeg">
+    <source src="cancion.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const eventTime = new Date('2026-10-15T21:00:00-03:00').getTime();
+
+    function refreshTimer() {
+      const now = new Date().getTime();
+      const diff = eventTime - now;
+
+      if (diff <= 0) {
+        document.getElementById('days').innerText = '00';
+        document.getElementById('hours').innerText = '00';
+        document.getElementById('mins').innerText = '00';
+        document.getElementById('secs').innerText = '00';
+        return;
+      }
+
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+      document.getElementById('days').innerText = String(d).padStart(2, '0');
+      document.getElementById('hours').innerText = String(h).padStart(2, '0');
+      document.getElementById('mins').innerText = String(m).padStart(2, '0');
+      document.getElementById('secs').innerText = String(s).padStart(2, '0');
+    }
+
+    setInterval(refreshTimer, 1000);
+    refreshTimer();
+
+    // Manejo de Audio Nativo en segundo 49
+    const audio = document.getElementById('audioTrack');
+    let isPlaying = false;
+
+    function startMusic() {
+      const seekAndPlay = () => {
+        try {
+          audio.currentTime = 49;
+        } catch (e) {
+          console.log("No se pudo saltar al seg 49 inmediatamente, reproduciendo:", e);
+        }
+        audio.play().then(() => {
+          isPlaying = true;
+          setUIState(true);
+        }).catch(err => {
+          console.log("Error al reproducir audio:", err);
+        });
+      };
+
+      if (audio.readyState >= 1) {
+        seekAndPlay();
+      } else {
+        audio.addEventListener('loadedmetadata', seekAndPlay, { once: true });
+        audio.load();
+      }
+    }
+
+    function toggleAudio() {
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+        setUIState(false);
+      } else {
+        audio.play().then(() => {
+          isPlaying = true;
+          setUIState(true);
+        });
+      }
+    }
+
+    function setUIState(playing) {
+      const btn = document.getElementById('mute-btn');
+      const waves = document.getElementById('waves');
+      const status = document.getElementById('track-status');
+      if (playing) {
+        btn.innerText = 'Pausar';
+        waves.classList.remove('paused');
+        status.innerText = 'Sonando en vivo 🎶';
+      } else {
+        btn.innerText = 'Reanudar';
+        waves.classList.add('paused');
+        status.innerText = 'Pausado';
+      }
+    }
+
+    function openCurtain() {
+      const curtainWrapper = document.getElementById('curtain-wrapper');
+      const curtainContent = document.getElementById('curtain-content');
+      const mainContainer = document.getElementById('main-container');
+
+      // Se ejecuta de inmediato con el tap del usuario
+      startMusic();
+
+      curtainContent.classList.add('fade-out');
+      curtainWrapper.classList.add('open');
+      mainContainer.classList.add('visible');
+
+      setTimeout(() => {
+        curtainWrapper.style.display = 'none';
+
+        const duration = 3.5 * 1000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+          confetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 60,
+            origin: { x: 0 },
+            colors: ['#d90429', '#f3c257', '#ffffff']
+          });
+          confetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 60,
+            origin: { x: 1 },
+            colors: ['#d90429', '#f3c257', '#ffffff']
+          });
+
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        }());
+      }, 2800);
+    }
+
+    async function saveOrShare() {
+      const shareData = {
+        title: '¡Feliz Cumple Ma! - Camila en Movistar Arena',
+        text: 'Nuestras entradas para ver a Camila en el Movistar Arena 🎟️',
+        url: window.location.href
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+        } catch (err) {
+          console.log('Compartir cancelado');
+        }
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        alert('¡Enlace copiado al portapapeles!');
+      }
+    }
+  </script>
+</body>
+</html>

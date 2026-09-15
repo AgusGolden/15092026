@@ -647,7 +647,7 @@
         </div>
         <div>
           <strong style="color: #fff; font-weight: 600;">Camila - Decidiste Dejarme</strong>
-          <div style="font-size: 0.72rem; color: var(--gold);" id="track-status">Sonando en vivo 🎶</div>
+          <div style="font-size: 0.72rem; color: var(--gold);" id="track-status">Sonando... 🎶</div>
         </div>
       </div>
       <button class="music-toggle-btn" id="mute-btn" onclick="toggleAudio()">Pausar</button>
@@ -766,13 +766,19 @@
 
   </div>
 
-  <!-- Audio nativo -->
+  <!-- Audio nativo con las dos posibles rutas del archivo local -->
   <audio id="audioTrack" preload="auto" playsinline>
-    <source src="Camila - Decidiste Dejarme (Videoclip Oficial).mp3" type="audio/mpeg">
     <source src="cancion.mp3" type="audio/mpeg">
+    <source src="Camila - Decidiste Dejarme (Videoclip Oficial).mp3" type="audio/mpeg">
   </audio>
 
   <script>
+    // Fijar scroll arriba al cargar
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+
     const eventTime = new Date('2026-10-15T21:00:00-03:00').getTime();
 
     function refreshTimer() {
@@ -806,39 +812,43 @@
     let isPlaying = false;
     let fadeInterval = null;
 
+    // Sube progresivamente el volumen desde 0
     function fadeInAudio() {
-      audio.volume = 0.05;
       clearInterval(fadeInterval);
       fadeInterval = setInterval(() => {
         if (audio.volume < 0.95) {
-          audio.volume = Math.min(1, audio.volume + 0.03);
+          audio.volume = Math.min(1, audio.volume + 0.05);
         } else {
           audio.volume = 1;
           clearInterval(fadeInterval);
         }
-      }, 100);
+      }, 70);
     }
 
-    // Prepara el audio en el gesto del usuario y lo arranca al mismo tiempo que el confeti
-    function armAndPlayMusic(delayMs) {
-      audio.load();
+    // Arranque inmediato mudo (para que móviles autoricen) y fade-in sincronizado
+    function startMusicInstant() {
+      // 1. Iniciamos 1.2 segundos antes del estribillo (segundo 47.8)
       try {
-        audio.currentTime = 49;
+        audio.currentTime = 47.8;
       } catch (e) {}
 
-      setTimeout(() => {
-        try {
-          audio.currentTime = 49;
-        } catch (e) {}
-        audio.volume = 0.05;
-        audio.play().then(() => {
+      // 2. Volumen en 0 (silencio total durante el inicio de la cortina)
+      audio.volume = 0;
+
+      // 3. Play dentro del gesto de click
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
           isPlaying = true;
-          fadeInAudio();
-          setUIState(true);
+          // 4. A los 1.2 segundos (segundo 49 exacto + explosión de confeti) sube el volumen
+          setTimeout(() => {
+            fadeInAudio();
+            setUIState(true);
+          }, 1200);
         }).catch(err => {
-          console.log("Error al reproducir audio:", err);
+          console.warn("Audio no autorizado:", err);
         });
-      }, delayMs);
+      }
     }
 
     function toggleAudio() {
@@ -863,7 +873,7 @@
       if (playing) {
         btn.innerText = 'Pausar';
         waves.classList.remove('paused');
-        status.innerText = 'Sonando en vivo 🎶';
+        status.innerText = 'Sonando... 🎶';
       } else {
         btn.innerText = 'Reanudar';
         waves.classList.add('paused');
@@ -911,6 +921,11 @@
 
     // Apertura del telón sincronizada
     function openCurtain() {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
+      // 1. El audio empieza a rodar en el instante del tap (volumen 0 en seg 47.8)
+      startMusicInstant();
+
       const curtainWrapper = document.getElementById('curtain-wrapper');
       const curtainContent = document.getElementById('curtain-content');
       const mainContainer = document.getElementById('main-container');
@@ -919,24 +934,18 @@
       curtainWrapper.classList.add('open');
       mainContainer.classList.add('visible');
 
-      // Momento sincronizado: 1.2 segundos tras iniciar la apertura
-      const SYNC_TIME = 1200;
-
-      // 1. La música arranca a la par del confeti
-      armAndPlayMusic(SYNC_TIME);
-
-      // 2. El confeti explota en ese instante exacto
+      // 2. Al segundo 1.2 explota el confeti (la canción llega al seg 49 y sube el volumen)
       setTimeout(() => {
         launchConfetti(4000);
-      }, SYNC_TIME);
+      }, 1200);
 
-      // Cierre del wrapper una vez que el telón salió completamente de pantalla
+      // 3. Se retira el telón una vez finalizada la transición completa
       setTimeout(() => {
         curtainWrapper.style.display = 'none';
       }, 3800);
     }
 
-    // Guardar / Compartir (listo para reactivar cuando quieras)
+    // Guardar / Compartir
     async function saveOrShare() {
       const shareData = {
         title: '¡Feliz Cumple Ma! - Camila en Movistar Arena',
